@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>フクの落ち物よけゲーム</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #f0f8ff;
+    }
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background-color: #cceeff;
+    }
+    #fuku {
+      position: absolute;
+      bottom: 10px;
+      width: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .rock {
+      position: absolute;
+      top: -60px;
+      width: 60px;
+      height: 60px;
+      background: gray;
+      border-radius: 50%;
+    }
+    #gameover {
+      display: none;
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2em;
+      background: white;
+      padding: 20px;
+      border: 2px solid black;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <img src="fuku.png" id="fuku" />
+    <div id="gameover">ゲームオーバー！</div>
+  </div>
+
+  <script>
+    const game = document.getElementById("game");
+    const fuku = document.getElementById("fuku");
+    const gameover = document.getElementById("gameover");
+
+    let fukuX = window.innerWidth / 2 - 40;
+    const fukuSpeed = 10;
+    const rockSpeed = 4;
+    let isGameOver = false;
+
+    function moveFuku(direction) {
+      if (isGameOver) return;
+      fukuX += direction * fukuSpeed;
+      fukuX = Math.max(0, Math.min(window.innerWidth - 80, fukuX));
+      fuku.style.left = fukuX + "px";
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") moveFuku(-1);
+      if (e.key === "ArrowRight") moveFuku(1);
+    });
+
+    // スマホ用：左右画面をタップで移動（後で追加OK）
+
+    function spawnRock() {
+      if (isGameOver) return;
+      const rock = document.createElement("div");
+      rock.className = "rock";
+      rock.style.left = Math.random() * (window.innerWidth - 60) + "px";
+      game.appendChild(rock);
+
+      let rockY = -60;
+      const fall = setInterval(() => {
+        if (isGameOver) {
+          clearInterval(fall);
+          return;
+        }
+        rockY += rockSpeed;
+        rock.style.top = rockY + "px";
+
+        // 当たり判定
+        const rockRect = rock.getBoundingClientRect();
+        const fukuRect = fuku.getBoundingClientRect();
+        if (
+          rockRect.top + rockRect.height > fukuRect.top &&
+          rockRect.left < fukuRect.right &&
+          rockRect.right > fukuRect.left
+        ) {
+          gameover.style.display = "block";
+          isGameOver = true;
+          clearInterval(fall);
+        }
+
+        if (rockY > window.innerHeight) {
+          game.removeChild(rock);
+          clearInterval(fall);
+        }
+      }, 20);
+    }
+
+    setInterval(spawnRock, 1000);
+  </script>
+</body>
+</html>
