@@ -14,11 +14,12 @@
       width: 100vw;
       height: 100vh;
       background-color: #cceeff;
+      overflow: hidden;
     }
     #fuku {
       position: absolute;
       bottom: 10px;
-      width: 120px; /* フクを大きく */
+      width: 120px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
@@ -37,12 +38,12 @@
       background-image: url('kawaii_rock.png');
     }
     .bone {
-      background-image: url('bone.png'); /* 骨の画像（用意してね） */
+      background-image: url('bone_transparent.png');
     }
     #gameover {
       display: none;
       position: absolute;
-      top: 40%;
+      top: 35%;
       left: 50%;
       transform: translateX(-50%);
       font-size: 2em;
@@ -51,6 +52,17 @@
       border: 2px solid black;
       border-radius: 10px;
       z-index: 20;
+      text-align: center;
+    }
+    #retryBtn {
+      margin-top: 15px;
+      font-size: 1em;
+      padding: 10px 20px;
+      background-color: #f08080;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
     #score {
       position: absolute;
@@ -68,16 +80,20 @@
   <div id="game">
     <div id="score">スコア: 0</div>
     <img src="fuku.png" id="fuku" />
-    <div id="gameover">ゲームオーバー！</div>
+    <div id="gameover">
+      ゲームオーバー！<br>
+      <button id="retryBtn">もう一回！</button> <!-- ★ リトライボタン -->
+    </div>
   </div>
 
   <script>
     const game = document.getElementById("game");
     const fuku = document.getElementById("fuku");
     const gameover = document.getElementById("gameover");
+    const retryBtn = document.getElementById("retryBtn");
     const scoreDisplay = document.getElementById("score");
 
-    let fukuX = window.innerWidth / 2 - 60; // 中央に調整（120px幅）
+    let fukuX = window.innerWidth / 2 - 60;
     const fukuSpeed = 15;
     const fallSpeed = 4;
     let isGameOver = false;
@@ -90,13 +106,11 @@
       fuku.style.left = fukuX + "px";
     }
 
-    // キーボード操作
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") moveFuku(-1);
       if (e.key === "ArrowRight") moveFuku(1);
     });
 
-    // スマホタップ操作
     game.addEventListener("touchstart", (e) => {
       const tapX = e.touches[0].clientX;
       const middle = window.innerWidth / 2;
@@ -146,9 +160,21 @@
       }, 20);
     }
 
-    // 石は1秒ごと、骨は2.5秒ごとに落ちてくる
-    setInterval(() => spawnItem("rock"), 1000);
-    setInterval(() => spawnItem("bone"), 2500);
+    const rockInterval = setInterval(() => spawnItem("rock"), 1000);
+    const boneInterval = setInterval(() => spawnItem("bone"), 2500);
+
+    // ★ リトライ処理
+    retryBtn.addEventListener("click", () => {
+      isGameOver = false;
+      score = 0;
+      scoreDisplay.textContent = "スコア: 0";
+      fukuX = window.innerWidth / 2 - 60;
+      fuku.style.left = fukuX + "px";
+      gameover.style.display = "none";
+
+      // 画面上のすべてのrockとboneを削除
+      document.querySelectorAll(".rock, .bone").forEach(el => el.remove());
+    });
   </script>
 </body>
 </html>
