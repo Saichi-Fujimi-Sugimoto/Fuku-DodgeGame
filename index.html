@@ -15,15 +15,13 @@
       height: 100vh;
       background-color: #cceeff;
       overflow: hidden;
-      touch-action: none; /* タッチのスクロール無効化 */
     }
     #fuku {
       position: absolute;
       bottom: 10px;
       width: 120px;
-      /* transform: translateX(-50%);  ← 削除しました */
       left: 50%;
-      margin-left: -60px; /* -width/2で中央寄せ */
+      margin-left: -60px;
       z-index: 10;
     }
     .rock, .bone {
@@ -97,12 +95,10 @@
 
     let fukuX = window.innerWidth / 2 - 60;
     const fukuWidth = 120;
-    const fukuSpeed = 30; // 速くしました
+    const fukuSpeed = 30;
     const fallSpeed = 4;
     let isGameOver = false;
     let score = 0;
-
-    // フクの移動方向（-1: 左, 1: 右, 0: 停止）
     let moveDirection = 0;
 
     function moveFuku(direction) {
@@ -112,27 +108,21 @@
       fuku.style.left = fukuX + "px";
     }
 
-    // キーボード操作（PC用）
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") moveFuku(-1);
       if (e.key === "ArrowRight") moveFuku(1);
     });
 
-    // タッチ開始：画面左右で方向決定し、動き続ける
     game.addEventListener("touchstart", (e) => {
-      e.preventDefault(); // スクロール防止
       const tapX = e.touches[0].clientX;
       const middle = window.innerWidth / 2;
       moveDirection = tapX < middle ? -1 : 1;
     });
 
-    // タッチ終了：動きを止める
-    game.addEventListener("touchend", (e) => {
-      e.preventDefault();
+    game.addEventListener("touchend", () => {
       moveDirection = 0;
     });
 
-    // 毎フレーム動かすゲームループ
     function gameLoop() {
       if (!isGameOver && moveDirection !== 0) {
         moveFuku(moveDirection);
@@ -141,7 +131,6 @@
     }
     gameLoop();
 
-    // 落ち物生成
     function spawnItem(type) {
       if (isGameOver) return;
       const item = document.createElement("div");
@@ -169,7 +158,7 @@
           if (type === "rock") {
             gameover.style.display = "block";
             isGameOver = true;
-            moveDirection = 0; // 動きを止める
+            moveDirection = 0;
           } else if (type === "bone") {
             score++;
             scoreDisplay.textContent = "スコア: " + score;
@@ -188,7 +177,6 @@
     const rockInterval = setInterval(() => spawnItem("rock"), 1000);
     const boneInterval = setInterval(() => spawnItem("bone"), 2500);
 
-    // リトライボタン処理
     retryBtn.addEventListener("click", () => {
       isGameOver = false;
       score = 0;
@@ -197,12 +185,9 @@
       fuku.style.left = fukuX + "px";
       gameover.style.display = "none";
       moveDirection = 0;
-
-      // 落ちてるものを全部削除
       document.querySelectorAll(".rock, .bone").forEach(el => el.remove());
     });
 
-    // 画面リサイズ対応（fukuXの最大値調整など）
     window.addEventListener("resize", () => {
       fukuX = Math.min(fukuX, window.innerWidth - fukuWidth);
       fuku.style.left = fukuX + "px";
