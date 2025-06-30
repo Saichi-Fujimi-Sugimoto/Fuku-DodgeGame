@@ -18,21 +18,26 @@
     #fuku {
       position: absolute;
       bottom: 10px;
-      width: 80px;
+      width: 120px; /* フクを大きく */
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
     }
-    .rock {
+    .rock, .bone {
       position: absolute;
       top: -60px;
       width: 60px;
       height: 60px;
-      background-image: url('kawaii_rock.png');
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
       z-index: 5;
+    }
+    .rock {
+      background-image: url('kawaii_rock.png');
+    }
+    .bone {
+      background-image: url('bone.png'); /* 骨の画像（用意してね） */
     }
     #gameover {
       display: none;
@@ -45,11 +50,23 @@
       padding: 20px;
       border: 2px solid black;
       border-radius: 10px;
+      z-index: 20;
+    }
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.5em;
+      background: rgba(255,255,255,0.7);
+      padding: 5px 15px;
+      border-radius: 8px;
+      z-index: 20;
     }
   </style>
 </head>
 <body>
   <div id="game">
+    <div id="score">スコア: 0</div>
     <img src="fuku.png" id="fuku" />
     <div id="gameover">ゲームオーバー！</div>
   </div>
@@ -58,69 +75,80 @@
     const game = document.getElementById("game");
     const fuku = document.getElementById("fuku");
     const gameover = document.getElementById("gameover");
+    const scoreDisplay = document.getElementById("score");
 
-    let fukuX = window.innerWidth / 2 - 40;
-    const fukuSpeed = 10;
-    const rockSpeed = 4;
+    let fukuX = window.innerWidth / 2 - 60; // 中央に調整（120px幅）
+    const fukuSpeed = 15;
+    const fallSpeed = 4;
     let isGameOver = false;
+    let score = 0;
 
     function moveFuku(direction) {
       if (isGameOver) return;
       fukuX += direction * fukuSpeed;
-      fukuX = Math.max(0, Math.min(window.innerWidth - 80, fukuX));
+      fukuX = Math.max(0, Math.min(window.innerWidth - 120, fukuX));
       fuku.style.left = fukuX + "px";
     }
 
-    // PC操作
+    // キーボード操作
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") moveFuku(-1);
       if (e.key === "ArrowRight") moveFuku(1);
     });
 
-    // 📱スマホタップ操作
+    // スマホタップ操作
     game.addEventListener("touchstart", (e) => {
       const tapX = e.touches[0].clientX;
       const middle = window.innerWidth / 2;
-      if (tapX < middle) moveFuku(-1);  // 左タップ
-      else moveFuku(1);                 // 右タップ
+      if (tapX < middle) moveFuku(-1);
+      else moveFuku(1);
     });
 
-    function spawnRock() {
+    function spawnItem(type) {
       if (isGameOver) return;
-      const rock = document.createElement("div");
-      rock.className = "rock";
-      rock.style.left = Math.random() * (window.innerWidth - 60) + "px";
-      game.appendChild(rock);
+      const item = document.createElement("div");
+      item.className = type;
+      item.style.left = Math.random() * (window.innerWidth - 60) + "px";
+      game.appendChild(item);
 
-      let rockY = -60;
+      let y = -60;
       const fall = setInterval(() => {
         if (isGameOver) {
           clearInterval(fall);
           return;
         }
-        rockY += rockSpeed;
-        rock.style.top = rockY + "px";
+        y += fallSpeed;
+        item.style.top = y + "px";
 
-        const rockRect = rock.getBoundingClientRect();
+        const itemRect = item.getBoundingClientRect();
         const fukuRect = fuku.getBoundingClientRect();
+
         if (
-          rockRect.top + rockRect.height > fukuRect.top &&
-          rockRect.left < fukuRect.right &&
-          rockRect.right > fukuRect.left
+          itemRect.top + itemRect.height > fukuRect.top &&
+          itemRect.left < fukuRect.right &&
+          itemRect.right > fukuRect.left
         ) {
-          gameover.style.display = "block";
-          isGameOver = true;
+          if (type === "rock") {
+            gameover.style.display = "block";
+            isGameOver = true;
+          } else if (type === "bone") {
+            score++;
+            scoreDisplay.textContent = "スコア: " + score;
+          }
+          game.removeChild(item);
           clearInterval(fall);
         }
 
-        if (rockY > window.innerHeight) {
-          game.removeChild(rock);
+        if (y > window.innerHeight) {
+          if (game.contains(item)) game.removeChild(item);
           clearInterval(fall);
         }
       }, 20);
     }
 
-    setInterval(spawnRock, 1000);
+    // 石は1秒ごと、骨は2.5秒ごとに落ちてくる
+    setInterval(() => spawnItem("rock"), 1000);
+    setInterval(() => spawnItem("bone"), 2500);
   </script>
 </body>
 </html>
