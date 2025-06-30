@@ -21,14 +21,18 @@
       width: 80px;
       left: 50%;
       transform: translateX(-50%);
+      z-index: 10;
     }
     .rock {
       position: absolute;
       top: -60px;
       width: 60px;
       height: 60px;
-      background: gray;
-      border-radius: 50%;
+      background-image: url('kawaii_rock.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      z-index: 5;
     }
     #gameover {
       display: none;
@@ -67,12 +71,19 @@
       fuku.style.left = fukuX + "px";
     }
 
+    // PC操作
     document.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft") moveFuku(-1);
       if (e.key === "ArrowRight") moveFuku(1);
     });
 
-    // スマホ用：左右画面をタップで移動（後で追加OK）
+    // 📱スマホタップ操作
+    game.addEventListener("touchstart", (e) => {
+      const tapX = e.touches[0].clientX;
+      const middle = window.innerWidth / 2;
+      if (tapX < middle) moveFuku(-1);  // 左タップ
+      else moveFuku(1);                 // 右タップ
+    });
 
     function spawnRock() {
       if (isGameOver) return;
@@ -90,7 +101,6 @@
         rockY += rockSpeed;
         rock.style.top = rockY + "px";
 
-        // 当たり判定
         const rockRect = rock.getBoundingClientRect();
         const fukuRect = fuku.getBoundingClientRect();
         if (
